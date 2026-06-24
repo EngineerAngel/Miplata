@@ -59,6 +59,12 @@ variable "repo_url" {
   default     = "https://github.com/EngineerAngel/Miplata.git"
 }
 
+variable "ssh_allowed_cidr" {
+  type        = string
+  description = "CIDR autorizado para SSH (puerto 22). Usa tu IP/32, no 0.0.0.0/0."
+  default     = "0.0.0.0/0"
+}
+
 locals {
   name = "${var.project}-${var.environment}"
   common_tags = {

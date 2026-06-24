@@ -4,13 +4,13 @@ import { TipoCategoria } from '@prisma/client'
 
 type Estado = 'ok' | 'alerta' | 'critico'
 
-interface Indicador {
+export interface Indicador {
   valor: number
   meta: string
   estado: Estado
 }
 
-interface IndicadorRegla {
+export interface IndicadorRegla {
   necesidades: number
   gustos: number
   ahorro: number
@@ -34,8 +34,15 @@ export class SaludService {
         include: { categoria: true },
       }),
       this.prisma.tarjeta.findMany({ where: { userId, activa: true } }),
+      // Fondo de emergencia: ahorro acumulado (todas las fechas). El ahorro se
+      // registra como gasto con categoria de tipo ahorro; excluimos "Pago de deuda"
+      // porque amortizar deuda no constituye un fondo liquido de emergencia.
       this.prisma.transaccion.aggregate({
-        where: { userId, tipo: 'ingreso', categoria: { tipo: TipoCategoria.ahorro } },
+        where: {
+          userId,
+          tipo: 'gasto',
+          categoria: { tipo: TipoCategoria.ahorro, nombre: { not: 'Pago de deuda' } },
+        },
         _sum: { monto: true },
       }),
     ])

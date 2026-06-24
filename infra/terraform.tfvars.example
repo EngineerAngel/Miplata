@@ -6,3 +6,6 @@ repo_url     = "https://github.com/ANGEL-GOMEZ/Miplata.git"
 db_username  = "miplata"
 db_password  = "CAMBIAR-POR-PASSWORD-SEGURA"
 jwt_secret   = "CAMBIAR-POR-SECRETO-LARGO"
+
+# Restringe SSH a tu IP publica: https://ifconfig.me  ->  "x.x.x.x/32"
+ssh_allowed_cidr = "0.0.0.0/0"

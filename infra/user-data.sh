@@ -16,6 +16,9 @@ dnf install -y 'dnf-command(copr)'
 dnf copr enable -y @caddy/caddy epel-9-x86_64
 dnf install -y caddy
 
+# 2.5) Usuario de servicio sin privilegios para el backend
+id -u miplata &>/dev/null || useradd --system --create-home --shell /usr/sbin/nologin miplata
+
 # 3) Clonar repo
 rm -rf /opt/miplata
 git clone "${repo_url}" /opt/miplata
@@ -51,7 +54,9 @@ pnpm build
 cp /opt/miplata/infra/Caddyfile /etc/caddy/Caddyfile
 chown caddy:caddy /etc/caddy/Caddyfile
 
-# 8) Permisos frontend dist para Caddy
+# 8) Propiedad y permisos: backend para el usuario miplata, frontend para Caddy
+chown -R miplata:miplata /opt/miplata
+chmod 600 /opt/miplata/backend/.env
 chown -R caddy:caddy /opt/miplata/frontend/dist
 
 # 9) systemd backend
@@ -65,7 +70,9 @@ WorkingDirectory=/opt/miplata/backend
 ExecStart=/usr/bin/node dist/main.js
 Restart=always
 RestartSec=5
-User=root
+User=miplata
+Group=miplata
+NoNewPrivileges=true
 EnvironmentFile=/opt/miplata/backend/.env
 
 [Install]
