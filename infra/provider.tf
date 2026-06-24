@@ -56,7 +56,7 @@ variable "jwt_secret" {
 variable "repo_url" {
   type        = string
   description = "URL del repositorio GitHub a clonar en EC2"
-  default     = "https://github.com/ANGEL-GOMEZ/Miplata.git"
+  default     = "https://github.com/EngineerAngel/Miplata.git"
 }
 
 locals {
