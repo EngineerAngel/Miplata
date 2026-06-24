@@ -1,0 +1,8 @@
+aws_region   = "us-east-1"
+project      = "miplata"
+environment  = "prod"
+domain_name  = "miplata.skaspace.bid"
+repo_url     = "https://github.com/ANGEL-GOMEZ/Miplata.git"
+db_username  = "miplata"
+db_password  = "CAMBIAR-POR-PASSWORD-SEGURA"
+jwt_secret   = "CAMBIAR-POR-SECRETO-LARGO"

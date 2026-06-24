@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  nombre      String?
+  ingresoFijo Decimal? @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tarjetas       Tarjeta[]
+  transacciones  Transaccion[]
+
+  @@map("users")
+}
+
+model Tarjeta {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  nombre       String
+  banco        String?
+  limite       Decimal? @db.Decimal(10, 2)
+  saldoActual  Decimal  @default(0) @db.Decimal(10, 2) @map("saldo_actual")
+  fechaCorte   Int?     @map("fecha_corte")
+  fechaLimite  Int?     @map("fecha_limite")
+  diasGracia   Int      @default(20) @map("dias_gracia")
+  activa       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transacciones Transaccion[]
+
+  @@map("tarjetas")
+}
+
+model Transaccion {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  tarjetaId   String?  @map("tarjeta_id")
+  tipo        TipoTransaccion
+  monto       Decimal  @db.Decimal(10, 2)
+  categoriaId Int?     @map("categoria_id")
+  descripcion String?
+  fecha       DateTime @db.Date
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tarjeta  Tarjeta?   @relation(fields: [tarjetaId], references: [id], onDelete: SetNull)
+  categoria Categoria? @relation(fields: [categoriaId], references: [id])
+
+  @@index([userId, fecha])
+  @@index([tarjetaId])
+  @@map("transacciones")
+}
+
+model Categoria {
+  id    Int      @id @default(autoincrement())
+  nombre String
+  tipo  TipoCategoria
+  icono String?
+
+  transacciones Transaccion[]
+
+  @@map("categorias")
+}
+
+enum TipoTransaccion {
+  ingreso
+  gasto
+}
+
+enum TipoCategoria {
+  necesidad
+  gusto
+  ahorro
+}

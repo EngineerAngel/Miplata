@@ -1,0 +1,29 @@
+miplata.skaspace.bid {
+  encode gzip zstd
+
+  root * /opt/miplata/frontend/dist
+  try_files {path} /index.html
+  file_server
+
+  reverse_proxy /api/* 127.0.0.1:4000 {
+    header_up Host {host}
+    header_up X-Real-IP {remote_host}
+    header_up X-Forwarded-For {remote_host}
+    header_up X-Forwarded-Proto {scheme}
+  }
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Referrer-Policy strict-origin-when-cross-origin
+    Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  }
+
+  log {
+    output file /var/log/caddy/miplata.log {
+      roll_size 10mb
+      roll_keep 5
+    }
+  }
+}
