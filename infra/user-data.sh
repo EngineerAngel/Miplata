@@ -1,20 +1,26 @@
 #!/bin/bash
 set -euo pipefail
 
-# MiPlata - user-data para EC2 (Amazon Linux 2023)
+# MiPlata - user-data para EC2 (Ubuntu 22.04 LTS)
 # Variables provistas por Terraform: db_host, db_user, db_password, db_name, jwt_secret, domain, repo_url
 
+export DEBIAN_FRONTEND=noninteractive
+
 # 1) Node 20 + pnpm + git
-curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
-dnf install -y nodejs git tar
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt-get install -y nodejs git curl
 
 corepack enable
 corepack prepare pnpm@9.14.2 --activate
 
-# 2) Caddy (repo copr, epel-9 compatible con Amazon Linux 2023)
-dnf install -y 'dnf-command(copr)'
-dnf copr enable -y @caddy/caddy epel-9-x86_64
-dnf install -y caddy
+# 2) Caddy (repo oficial)
+apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+  | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+  | tee /etc/apt/sources.list.d/caddy-stable.list
+apt-get update
+apt-get install -y caddy
 
 # 2.5) Usuario de servicio sin privilegios para el backend
 id -u miplata &>/dev/null || useradd --system --create-home --shell /usr/sbin/nologin miplata
@@ -23,7 +29,7 @@ id -u miplata &>/dev/null || useradd --system --create-home --shell /usr/sbin/no
 rm -rf /opt/miplata
 git clone "${repo_url}" /opt/miplata
 
-# 4) Instalar dependencias del monorepo (desde la raiz, sin frozen-lockfile)
+# 4) Instalar dependencias del monorepo
 cd /opt/miplata
 pnpm install
 
@@ -54,7 +60,7 @@ pnpm build
 cp /opt/miplata/infra/Caddyfile /etc/caddy/Caddyfile
 chown caddy:caddy /etc/caddy/Caddyfile
 
-# 8) Propiedad y permisos: backend para el usuario miplata, frontend para Caddy
+# 8) Propiedad y permisos: backend para miplata, frontend para Caddy
 chown -R miplata:miplata /opt/miplata
 chmod 600 /opt/miplata/backend/.env
 chown -R caddy:caddy /opt/miplata/frontend/dist
@@ -84,4 +90,4 @@ systemctl enable --now miplata
 systemctl enable --now caddy
 systemctl restart caddy
 
-echo "✅ MiPlata desplegado en https://${domain}"
+echo "MiPlata desplegado en https://${domain}"

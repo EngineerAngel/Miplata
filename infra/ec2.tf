@@ -37,18 +37,23 @@ resource "aws_security_group" "backend" {
   tags = local.common_tags
 }
 
-data "aws_ami" "amazon_linux" {
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
 resource "aws_instance" "backend" {
-  ami                    = data.aws_ami.amazon_linux.id
+  ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t3.small"
   subnet_id              = aws_subnet.public["a"].id
   vpc_security_group_ids = [aws_security_group.backend.id]
