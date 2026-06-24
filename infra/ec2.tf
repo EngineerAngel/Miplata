@@ -53,14 +53,22 @@ resource "aws_instance" "backend" {
   subnet_id              = aws_subnet.public["a"].id
   vpc_security_group_ids = [aws_security_group.backend.id]
   monitoring             = true
+  key_name               = "Claver"
+
+  root_block_device {
+    volume_size = 30
+    volume_type = "gp3"
+    encrypted   = true
+  }
 
   user_data = templatefile("${path.module}/user-data.sh", {
-    db_host    = aws_db_instance.main.address
-    db_user    = var.db_username
-    db_name    = "miplata"
-    jwt_secret = var.jwt_secret
-    domain     = var.domain_name
-    repo_url   = var.repo_url
+    db_host     = aws_db_instance.main.address
+    db_user     = var.db_username
+    db_password = var.db_password
+    db_name     = "miplata"
+    jwt_secret  = var.jwt_secret
+    domain      = var.domain_name
+    repo_url    = var.repo_url
   })
 
   tags = merge(local.common_tags, { Name = "${local.name}-backend" })
