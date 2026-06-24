@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   CreditCard,
   ArrowDownCircle,
-  ArrowUpCircle,
   HeartPulse,
   LogOut,
   Wallet,
